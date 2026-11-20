@@ -1,17 +1,14 @@
-
 import matplotlib.pyplot as plt
-
 
 # ============================================================
 # 1. CLIPPING WINDOW CONSTANTS
 # ============================================================
 
 # Define the fixed boundaries of the clipping window.
-X_MIN = 20
-X_MAX = 80
-Y_MIN = 20
-Y_MAX = 80
-
+X_MIN = 50
+X_MAX = 200
+Y_MIN = 50
+Y_MAX = 150
 print(f"The Clipping window: from ({X_MIN},{Y_MIN}) to ({X_MAX},{Y_MAX})\n")
 
 # ============================================================
@@ -25,29 +22,8 @@ BOTTOM = 4     # 0100: Point is below the window.
 TOP = 8        # 1000: Point is above the window.
 
 
-# ============================================================
-# 3. FUNCTION: compute_code()
-# ============================================================
-
 def compute_code(x, y):
-    """
-    Purpose:
-        Calculate the 4-bit region code of a point.
-
-    Parameters:
-        x: X-coordinate of the point.
-        y: Y-coordinate of the point.
-
-    Returns:
-        Integer region code between 0 and 15.
-
-    Logic:
-        Check whether the point lies outside any of the
-        four boundaries of the clipping window.
-        Set the corresponding bits using bitwise OR.
-    """
-
-    # Initially assume that the point is inside the window.
+##    """Return a 4-bit region code describing a point's position relative to the window."""
     code = 0
 
     # Check whether the point is to the left.
@@ -70,36 +46,10 @@ def compute_code(x, y):
     return code
 
 
-# ============================================================
-# 4. FUNCTION: compute_intersection()
-# ============================================================
-
 def compute_intersection(x1, y1, x2, y2, code_out):
-    """
-    Purpose:
-        Calculate the intersection point between a line
-        and the clipping boundary indicated by code_out.
-
-    Parameters:
-        x1, y1: First endpoint coordinates.
-        x2, y2: Second endpoint coordinates.
-        code_out: Region code of the outside endpoint.
-
-    Returns:
-        Tuple (x, y) containing the intersection coordinates.
-
-    Logic:
-        Use if/elif to identify exactly one clipping boundary.
-        Handle vertical and horizontal lines explicitly
-        to avoid division by zero.
-    """
-
-    # --------------------------------------------------------
-    # CASE 1: LEFT BOUNDARY
-    # --------------------------------------------------------
-
+##    """Find where a line segment intersects the window edge indicated by code_out."""
+    
     if code_out & LEFT:
-
         # The intersection must lie on X_MIN.
         x_int = X_MIN
 
@@ -111,9 +61,6 @@ def compute_intersection(x1, y1, x2, y2, code_out):
         else:
             y_int = y1 + (y2 - y1) * (X_MIN - x1) / (x2 - x1)
 
-    # --------------------------------------------------------
-    # CASE 2: RIGHT BOUNDARY
-    # --------------------------------------------------------
 
     elif code_out & RIGHT:
 
@@ -128,9 +75,6 @@ def compute_intersection(x1, y1, x2, y2, code_out):
         else:
             y_int = y1 + (y2 - y1) * (X_MAX - x1) / (x2 - x1)
 
-    # --------------------------------------------------------
-    # CASE 3: BOTTOM BOUNDARY
-    # --------------------------------------------------------
 
     elif code_out & BOTTOM:
 
@@ -145,9 +89,6 @@ def compute_intersection(x1, y1, x2, y2, code_out):
         else:
             x_int = x1 + (x2 - x1) * (Y_MIN - y1) / (y2 - y1)
 
-    # --------------------------------------------------------
-    # CASE 4: TOP BOUNDARY
-    # --------------------------------------------------------
 
     elif code_out & TOP:
 
@@ -166,97 +107,32 @@ def compute_intersection(x1, y1, x2, y2, code_out):
     return (x_int, y_int)
 
 
-# ============================================================
-# 5. FUNCTION: clip_line()
-# ============================================================
-
 def clip_line(p1, p2):
-    """
-    Purpose:
-        Implement the Cohen-Sutherland line clipping algorithm.
-
-    Parameters:
-        p1: First endpoint as a tuple (x1, y1).
-        p2: Second endpoint as a tuple (x2, y2).
-
-    Returns:
-        Tuple containing the clipped endpoints:
-            (p1_new, p2_new)
-
-        Returns None if the line is completely outside.
-
-    Logic:
-        1. Handle zero-length lines.
-        2. Calculate endpoint region codes.
-        3. Apply trivial acceptance.
-        4. Apply trivial rejection.
-        5. Calculate intersection with the relevant boundary.
-        6. Replace the outside endpoint.
-        7. Repeat until accepted or rejected.
-    """
+##    """Clip a line segment to the window; return its visible portion or None if rejected."""
 
     # Extract coordinates from the endpoint tuples.
     x1, y1 = p1
     x2, y2 = p2
 
-    # --------------------------------------------------------
-    # CASE 1: ZERO-LENGTH LINE
-    # --------------------------------------------------------
-
-    # Check whether both endpoints represent the same point.
-    if p1 == p2:
-
-        # Calculate the region code of the single point.
-        code = compute_code(x1, y1)
-
-        # Accept if the point is inside the clipping window.
-        if code == 0:
-            return (p1, p2)
-
-        # Otherwise, reject the point.
-        return None
-
-    # --------------------------------------------------------
-    # STEP 1: COMPUTE INITIAL REGION CODES
-    # --------------------------------------------------------
 
     # Calculate region codes for both endpoints.
     code1 = compute_code(x1, y1)
     code2 = compute_code(x2, y2)
 
-    # --------------------------------------------------------
-    # STEP 2: ACCEPT / REJECT / CLIP LOOP
-    # --------------------------------------------------------
-
     while True:
 
-        # ----------------------------------------------------
-        # CASE A: TRIVIALLY ACCEPT
-        # ----------------------------------------------------
-
-        # Bitwise OR checks whether both endpoints are inside.
+        # Trivially Accept
         if (code1 | code2) == 0:
 
             # Return the entire line segment.
             return ((x1, y1), (x2, y2))
 
-        # ----------------------------------------------------
-        # CASE B: TRIVIALLY REJECT
-        # ----------------------------------------------------
-
-        # Bitwise AND checks whether both endpoints share
-        # at least one outside region.
+        # Trivially Reject
         elif (code1 & code2) != 0:
-
-            # The line cannot enter the clipping window.
             return None
 
-        # ----------------------------------------------------
-        # CASE C: PARTIAL ACCEPTANCE / CLIPPING REQUIRED
-        # ----------------------------------------------------
-
+        # Partially visible
         else:
-
             # Prefer the first endpoint if it is outside.
             if code1 != 0:
                 code_out = code1
@@ -265,22 +141,13 @@ def clip_line(p1, p2):
             else:
                 code_out = code2
 
-            # ------------------------------------------------
-            # CALCULATE INTERSECTION POINT
-            # ------------------------------------------------
-
-            # Use the selected endpoint's region code to
-            # determine which boundary must be intersected.
-            intersection = compute_intersection(
+            intersection_point = compute_intersection(
                 x1, y1, x2, y2, code_out
             )
 
             # Extract the intersection coordinates.
-            x_int, y_int = intersection
+            x_int, y_int = intersection_point
 
-            # ------------------------------------------------
-            # REPLACE THE SELECTED OUTSIDE ENDPOINT
-            # ------------------------------------------------
 
             # Replace the first endpoint if it was outside.
             if code_out == code1:
@@ -301,100 +168,37 @@ def clip_line(p1, p2):
                 code2 = compute_code(x2, y2)
 
 
-# ============================================================
-# 6. FUNCTION: validate_window()
-# ============================================================
+class line:
+    def __init__(self):
+        pass
+    
+    def input(self):
+        self.xstart = int(input("Enter x1: "))
+        self.ystart = int(input("Enter y1: "))
+        self.xend = int(input("Enter x2: "))
+        self.yend = int(input("Enter y2: "))
 
-def validate_window():
-    """
-    Purpose:
-        Validate the clipping window constants.
+        for val in [self.xstart, self.xend, self.ystart, self.yend]:
+            if val < 0 or val > 500:
+                print("Error: All coordinates must be in range 0-100.")
+                return None
+        return ((self.xstart, self.ystart), (self.xend, self.yend))
 
-    Returns:
-        True if the window is valid.
-
-    Logic:
-        X_MIN must be smaller than X_MAX.
-        Y_MIN must be smaller than Y_MAX.
-    """
-
-    # Check whether the horizontal boundaries are valid.
-    if X_MIN >= X_MAX:
-        return False
-
-    # Check whether the vertical boundaries are valid.
-    if Y_MIN >= Y_MAX:
-        return False
-
-    return True
-
-
-# ============================================================
-# 7. FUNCTION: get_line_input()
-# ============================================================
 
 def get_line_input():
-    """
-    Purpose:
-        Accept four integer coordinates from the keyboard.
-
-    Returns:
-        A tuple containing two endpoint tuples:
-            ((x1, y1), (x2, y2))
-
-    Logic:
-        1. Read four values.
-        2. Convert them into integers.
-        3. Validate the coordinate range (0-100).
-        4. Display an error and exit for invalid input.
-    """
-
-    try:
-
-        # Read the four coordinates from the keyboard.
-        x1 = int(input("Enter x1: "))
-        y1 = int(input("Enter y1: "))
-        x2 = int(input("Enter x2: "))
-        y2 = int(input("Enter y2: "))
-
-    except ValueError:
-
-        # Handle non-integer input.
-        print("Error: All coordinates must be integers.")
-        raise SystemExit
-
-    # Store all four coordinates for range validation.
-    coordinates = (x1, y1, x2, y2)
-
-    # Check whether every coordinate lies between 0 and 100.
-    for value in coordinates:
-
-        if value < 0 or value > 100:
-
-            print("Error: All coordinates must be in range 0-100.")
-            raise SystemExit
-
-    # Return the line as a tuple of two points.
-    return ((x1, y1), (x2, y2))
+##    """Read the line's endpoints, check their coordinate range, and return them."""
+    lines_list = []
+    num = int(input("How many lines: "))
+    for i in range(num):
+        l = line()
+        print(f"\nEnter line {i+1}: \n")
+        pts = l.input()
+        lines_list.append(pts)
+        
+    return lines_list
 
 
-# ============================================================
-# 8. FUNCTION: display_result()
-# ============================================================
-
-def display_result(original_line, clipped_line):
-    """
-    Purpose:
-        Display the original line and its clipping result.
-
-    Parameters:
-        original_line: Original endpoint tuple.
-        clipped_line: Clipped endpoint tuple or None.
-
-    Output:
-        Console status and a Matplotlib visualization.
-    """
-
+def display_result(original_line, clipped_line,ax,first):
     # Extract the original endpoint coordinates.
     (x1, y1), (x2, y2) = original_line
 
@@ -403,12 +207,7 @@ def display_result(original_line, clipped_line):
     print("P1 =", (x1, y1))
     print("P2 =", (x2, y2))
 
-    # --------------------------------------------------------
-    # DISPLAY CONSOLE RESULT
-    # --------------------------------------------------------
-
     if clipped_line is None:
-
         # The line lies completely outside the window.
         print("\nStatus: Rejected")
         print("The line is completely outside the clipping window.")
@@ -427,48 +226,20 @@ def display_result(original_line, clipped_line):
 
             print("\nStatus: Clipped")
 
-        # Display the resulting endpoints as floating-point values.
-        print("Clipped P1 =", tuple(map(float, p1_new)))
-        print("Clipped P2 =", tuple(map(float, p2_new)))
-
-    # --------------------------------------------------------
-    # CREATE MATPLOTLIB FIGURE
-    # --------------------------------------------------------
-
-    # Create a figure and its plotting axes.
-    fig = plt.subplots(figsize=(8, 8))
-
-    # --------------------------------------------------------
-    # DRAW THE CLIPPING WINDOW
-    # --------------------------------------------------------
-
-    # Plot the four sides of the rectangular clipping window.
-    plt.plot(
-        [X_MIN, X_MAX, X_MAX, X_MIN, X_MIN],
-        [Y_MIN, Y_MIN, Y_MAX, Y_MAX, Y_MIN],
-        color="black",
-        linewidth=2,
-        label="Clipping Window"
-    )
-
-    # --------------------------------------------------------
-    # DRAW THE ORIGINAL LINE
-    # --------------------------------------------------------
+        # Display the resulting endpoints.
+        print("Clipped P1 =", p1_new)
+        print("Clipped P2 =", p2_new)
 
     # Display the original line using a dashed red line.
-    plt.plot(
+    ax.plot(
         [x1, x2],
         [y1, y2],
         color="red",
         linestyle="--",
         linewidth=1.5,
-        label="Original Line"
+        label="Input Line" if first else "_nolegend_"
     )
-
-    # --------------------------------------------------------
-    # DRAW THE CLIPPED LINE
-    # --------------------------------------------------------
-
+    
     # Draw the resulting line only if it was accepted.
     if clipped_line is not None:
 
@@ -476,77 +247,44 @@ def display_result(original_line, clipped_line):
         (cx1, cy1), (cx2, cy2) = clipped_line
 
         # Highlight the clipped portion using a blue line.
-        plt.plot(
+        ax.plot(
             [cx1, cx2],
             [cy1, cy2],
             color="blue",
             linewidth=3,
-            label="Clipped Line"
+            label="Part kept after clipping" if first else "_nolegend_"
         )
 
-    # --------------------------------------------------------
-    # GRAPH CONFIGURATION
-    # --------------------------------------------------------
 
-    # Set the coordinate system limits.
-    plt.xlim(0, 100)
-    plt.ylim(0, 100)
+## MAIN FUNCTION BEGINES
+    
+# Get the original line segment from the keyboard.
+all_lines = get_line_input()
 
-    # Add labels to the coordinate axes.
-    plt.xlabel("X-coordinate")
-    plt.ylabel("Y-coordinate")
+fig, ax = plt.subplots(figsize=(8, 8))
 
-    # Add the graph title.
-    plt.title("Cohen-Sutherland Line Clipping Algorithm")
+# Draw clipping window only once
+ax.plot(
+    [X_MIN, X_MAX, X_MAX, X_MIN, X_MIN],
+    [Y_MIN, Y_MIN, Y_MAX, Y_MAX, Y_MIN],
+    color="black",
+    linewidth=2,
+    label=f"Clipping Window: ({X_MIN},{Y_MIN}) to ({X_MAX},{Y_MAX})"
+)
+for i,aline in enumerate(all_lines):
+    clipped_line = clip_line(aline[0], aline[1])
+    display_result(aline, clipped_line, ax,i==0,)
 
-    # Display a grid for easier coordinate observation.
-    plt.grid(True)
+# Configure graph only once
+ax.set_xlim(0, 250)
+ax.set_ylim(0, 200)
+ax.set_xlabel("X-coordinate")
+ax.set_ylabel("Y-coordinate")
+ax.set_title("Cohen-Sutherland Line Clipping Algorithm")
+ax.grid(True)
+ax.set_aspect("equal")
 
-    # Maintain equal scaling on both axes.
-##    plt.aspect("equal", adjustable="box")
+# Display legend only once
+plt.legend()
 
-    # Display the legend.
-    plt.legend()
-
-    # Display the graph window.
-    plt.show()
-
-
-# ============================================================
-# 9. MAIN PROGRAM
-# ============================================================
-
-def main():
-    """
-    Purpose:
-        Control the overall execution of the program.
-
-    Logic:
-        1. Validate the clipping window.
-        2. Accept line coordinates.
-        3. Execute the clipping algorithm.
-        4. Display the result.
-    """
-
-    # Validate the predefined clipping window.
-    if not validate_window():
-
-        print("Error: Invalid clipping window boundaries.")
-        raise SystemExit
-
-    # Get the original line segment from the keyboard.
-    original_line = get_line_input()
-
-    # Execute the Cohen-Sutherland clipping algorithm.
-    clipped_line = clip_line(
-        original_line[0],
-        original_line[1]
-    )
-
-    # Display the clipping result and graphical output.
-    display_result(original_line, clipped_line)
-
-
-# Execute the main function when the program runs directly.
-if __name__ == "__main__":
-    main()
+plt.show()
