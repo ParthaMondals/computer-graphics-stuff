@@ -179,6 +179,9 @@ Status: Clipped
 Clipped P1 = (68.125, 50)
 Clipped P2 = (161.875, 150)
 
+### Output Image
+
+![Line-clipping output](line_clipped.png)
 
 ### Output image
 
