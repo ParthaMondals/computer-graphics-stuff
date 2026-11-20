@@ -28,16 +28,7 @@ This project implements the algorithm from scratch in Python without using any b
 
 ## Clipping Window
 
-The clipping window is predefined using four constants:
-
-```python
-X_MIN = 20
-X_MAX = 80
-Y_MIN = 20
-Y_MAX = 80
-```
-
-Therefore, the clipping window extends from `(20, 20)` to `(80, 80)`.
+The clipping window extends from `(50,50)` to `(200,150)`.
 
 ## Region Codes
 
@@ -118,61 +109,79 @@ The program accepts four integer coordinates from the keyboard:
 - Only one line segment is processed per execution.
 
 ## Sample Execution
+# Cohen–Sutherland Line Clipping
 
-### Example 1: Partially Clipped Line
+This project clips line segments against a rectangular clipping window using the Cohen–Sutherland algorithm.
 
-**Input:**
+## Input
 
-```text
-Enter x1: 10
-Enter y1: 30
-Enter x2: 60
-Enter y2: 70
-```
+**Clipping window:** lower-left corner `(50, 50)`, upper-right corner `(200, 150)`
 
-**Output:**
+Clip each of the following six lines against this window:
 
-```text
-Status: Clipped
-Clipped P1 = (20.0, 38.0)
-Clipped P2 = (60.0, 70.0)
-```
+| Line | From | To |
+|---|---|---|
+| L1 | `(140, 70)` | `(185, 130)` |
+| L2 | `(10, 165)` | `(40, 190)` |
+| L3 | `(20, 125)` | `(250, 125)` |
+| L4 | `(80, 20)` | `(80, 180)` |
+| L5 | `(20, 20)` | `(150, 200)` |
+| L6 | `(40 , 20)` | `(190, 180)` |
 
-### Example 2: Trivially Accepted Line
+## Output
 
-**Input:**
+### Output text
 
-```text
-Enter x1: 30
-Enter y1: 32
-Enter x2: 70
-Enter y2: 73
-```
+Original Line:
+P1 = (140, 70)
+P2 = (185, 130)
 
-**Output:**
-
-```text
 Status: Trivially Accepted
-Clipped P1 = (30.0, 32.0)
-Clipped P2 = (70.0, 73.0)
-```
+Clipped P1 = (140, 70)
+Clipped P2 = (185, 130)
 
-### Example 3: Trivially Rejected Line
+Original Line:
+P1 = (10, 165)
+P2 = (40, 190)
 
-**Input:**
-
-```text
-Enter x1: 5
-Enter y1: 10
-Enter x2: 10
-Enter y2: 15
-```
-
-**Output:**
-
-```text
 Status: Rejected
 The line is completely outside the clipping window.
-```
 
-###
+Original Line:
+P1 = (20, 125)
+P2 = (250, 125)
+
+Status: Clipped
+Clipped P1 = (50, 125.0)
+Clipped P2 = (200, 125.0)
+
+Original Line:
+P1 = (80, 20)
+P2 = (80, 180)
+
+Status: Clipped
+Clipped P1 = (80.0, 50)
+Clipped P2 = (80.0, 150)
+
+Original Line:
+P1 = (20, 20)
+P2 = (150, 200)
+
+Status: Clipped
+Clipped P1 = (50, 61.53846153846154)
+Clipped P2 = (113.88888888888889, 150)
+
+Original Line:
+P1 = (40, 20)
+P2 = (190, 180)
+
+Status: Clipped
+Clipped P1 = (68.125, 50)
+Clipped P2 = (161.875, 150)
+
+
+### Output image
+
+<!-- Add the output image below this line. -->
+
+
