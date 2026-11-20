@@ -181,10 +181,6 @@ Clipped P2 = (161.875, 150)
 
 ### Output Image
 
-![Line-clipping output](line_clipped.png)
-
-### Output image
-
-<!-- Add the output image below this line. -->
+![Line-clipping output](line_clipped.PNG)
 
 
